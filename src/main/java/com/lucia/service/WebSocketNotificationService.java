@@ -93,4 +93,21 @@ public class WebSocketNotificationService {
             logger.debug("Error al enviar heartbeat: {}", e.getMessage());
         }
     }
+
+    /**
+     * Notifica a todos los clientes que se consultaron las estadísticas
+     */
+    public void notifyStatsRequested(java.util.Map<String, Object> stats) {
+        try {
+            logger.info("Enviando notificación WebSocket de consulta de estadísticas");
+            
+            // Notificar a todos los clientes suscritos al topic de estadísticas
+            messagingTemplate.convertAndSend("/topic/requests/stats/consulted", stats);
+            
+            logger.info("Notificación WebSocket de estadísticas enviada exitosamente");
+            
+        } catch (Exception e) {
+            logger.error("Error al enviar notificación WebSocket de estadísticas", e);
+        }
+    }
 }

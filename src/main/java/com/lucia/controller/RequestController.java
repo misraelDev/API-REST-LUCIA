@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/requests")
@@ -164,16 +165,58 @@ public class RequestController {
 
 
     /**
-     * Obtiene estadísticas de solicitudes
+     * Obtiene estadísticas reales de solicitudes basadas en datos de la base de datos
      */
     @GetMapping("/stats")
-    public ResponseEntity<RequestService.RequestStats> getRequestStats() {
+    public ResponseEntity<Map<String, Object>> getRequestStats() {
         try {
-            RequestService.RequestStats stats = requestService.getRequestStats();
+            logger.info("Obteniendo estadísticas reales de solicitudes");
+            
+            // Obtener estadísticas básicas del servicio (datos reales de la base de datos)
+            RequestService.RequestStats basicStats = requestService.getRequestStats();
+            
+            // Crear estadísticas usando solo datos reales de las tablas
+            Map<String, Object> stats = new HashMap<>();
+            
+            // ESTADÍSTICAS BÁSICAS (datos reales de la tabla requests)
+            Map<String, Object> basic = new HashMap<>();
+            basic.put("total_requests", basicStats.getTotalRequests());
+            basic.put("pending_requests", basicStats.getPendingRequests());
+            basic.put("completed_requests", basicStats.getCompletedRequests());
+            basic.put("requests_with_referral", basicStats.getRequestsWithReferral());
+            
+            // Calcular porcentajes solo si hay datos
+            if (basicStats.getTotalRequests() > 0) {
+                basic.put("completion_rate", String.format("%.1f%%", 
+                    (double) basicStats.getCompletedRequests() / basicStats.getTotalRequests() * 100));
+                basic.put("pending_rate", String.format("%.1f%%", 
+                    (double) basicStats.getPendingRequests() / basicStats.getTotalRequests() * 100));
+                basic.put("referral_rate", String.format("%.1f%%", 
+                    (double) basicStats.getRequestsWithReferral() / basicStats.getTotalRequests() * 100));
+            }
+            
+            stats.put("basic_stats", basic);
+            
+            // ESTADÍSTICAS POR ESTADO (datos reales de la tabla requests)
+            Map<String, Object> byStatus = new HashMap<>();
+            byStatus.put("pending", basicStats.getPendingRequests());
+            byStatus.put("completed", basicStats.getCompletedRequests());
+            byStatus.put("with_referral", basicStats.getRequestsWithReferral());
+            stats.put("by_status", byStatus);
+            
+
+            
+            logger.info("Estadísticas generadas exitosamente usando datos reales de la base de datos");
+            
+            // Notificar a todos los clientes conectados vía WebSocket que se consultaron las estadísticas
+            webSocketNotificationService.notifyStatsRequested(stats);
+            
             return ResponseEntity.ok(stats);
+            
         } catch (Exception e) {
-            logger.error("Failed to get request stats", e);
-            throw e;
+            logger.error("Error al obtener estadísticas: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Error al obtener estadísticas", "message", e.getMessage()));
         }
     }
 
