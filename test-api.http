@@ -1,0 +1,62 @@
+### Test API Endpoints for Lucia API
+
+# 1. Health Check
+GET http://localhost:8080/api/auth/health
+Content-Type: application/json
+
+###
+
+# 2. Create User in Supabase Authentication
+POST http://localhost:8080/api/users/create
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123",
+  "fullName": "Test User"
+}
+
+###
+
+# 3. Register User (Alternative endpoint)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "user2@example.com",
+  "password": "password123",
+  "fullName": "User Two"
+}
+
+###
+
+# 4. Login User
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+###
+
+# 5. Refresh Token
+POST http://localhost:8080/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refresh_token": "YOUR_REFRESH_TOKEN_HERE"
+}
+
+###
+
+# 6. Logout
+POST http://localhost:8080/api/auth/logout
+Content-Type: application/json
+
+###
+
+# 7. Users Health Check
+GET http://localhost:8080/api/users/health
+Content-Type: application/json
