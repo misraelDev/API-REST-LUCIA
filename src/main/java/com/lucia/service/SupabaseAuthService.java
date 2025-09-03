@@ -64,9 +64,20 @@ public class SupabaseAuthService {
             JsonNode node = objectMapper.readTree(json);
             // Supabase Admin devuelve {"users":[...], "aud":"..."}
             if (node.has("users") && node.get("users").isArray()) {
-                boolean exists = node.get("users").size() > 0;
-                logger.info("Admin lookup: users array with {} items, exists: {}", node.get("users").size(), exists);
-                return exists;
+                JsonNode users = node.get("users");
+                boolean matched = false;
+                for (JsonNode u : users) {
+                    String primaryEmail = u.path("email").asText(null);
+                    String metadataEmail = u.path("user_metadata").path("email").asText(null);
+                    boolean equalsPrimary = primaryEmail != null && email.equalsIgnoreCase(primaryEmail);
+                    boolean equalsMetadata = metadataEmail != null && email.equalsIgnoreCase(metadataEmail);
+                    if (equalsPrimary || equalsMetadata) {
+                        matched = true;
+                        break;
+                    }
+                }
+                logger.info("Admin lookup: users array with {} items, exactMatch: {}", users.size(), matched);
+                return matched;
             }
             // Fallback: si no tiene estructura esperada, asumir que no existe
             logger.info("Admin lookup: unexpected structure, assuming user doesn't exist");

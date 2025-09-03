@@ -19,21 +19,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/users/**").permitAll()
-                .requestMatchers("/api/email/**").permitAll()
-                .requestMatchers("/api/requests/**").permitAll()
-                .requestMatchers("/api/health/**").permitAll()
-                .requestMatchers("/api/ws/**").permitAll()
-                .requestMatchers("/health").permitAll()
-                .requestMatchers("/ws/**").permitAll()
-                .anyRequest().authenticated()
-            );
-        
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/users/**").permitAll()
+                        .requestMatchers("/api/email/**").permitAll()
+                        .requestMatchers("/api/requests/**").permitAll()
+                        .requestMatchers("/api/calls/**").permitAll()
+                        .requestMatchers("/api/contacts/**").permitAll()
+                        .requestMatchers("/api/health/**").permitAll()
+                        .requestMatchers("/api/stats/**").permitAll()
+                        .requestMatchers("/api/appointments/**").permitAll()
+                        .requestMatchers("/api/ws/**").permitAll()
+                        .requestMatchers("/health").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
+                        .anyRequest().authenticated());
+
         return http.build();
     }
 
@@ -46,7 +49,7 @@ public class SecurityConfig {
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
-        
+
         // Configuración específica para WebSocket
         CorsConfiguration wsConfiguration = new CorsConfiguration();
         wsConfiguration.setAllowedOriginPatterns(Arrays.asList("*"));
@@ -55,14 +58,12 @@ public class SecurityConfig {
         wsConfiguration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         wsConfiguration.setAllowCredentials(true);
         wsConfiguration.setMaxAge(3600L);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         source.registerCorsConfiguration("/ws/**", wsConfiguration);
         source.registerCorsConfiguration("/api/ws/**", wsConfiguration);
-        
+
         return source;
     }
 }
-
-

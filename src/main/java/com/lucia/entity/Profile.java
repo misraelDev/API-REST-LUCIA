@@ -11,7 +11,8 @@ public class Profile {
     public enum Role {
         seller,
         buyer,
-        admin
+        admin,
+        user
     }
 
     @Id

@@ -57,8 +57,14 @@ public class ProfileService {
 
     private Profile.Role parseRole(String role) {
         if (role == null || role.isBlank()) return Profile.Role.buyer;
+        String normalized = role.toLowerCase(Locale.ROOT);
+        // Mapear explícitamente "user" a un rol permitido por la BD
+        if ("user".equals(normalized)) {
+            logger.info("Mapping role 'user' to 'buyer' to satisfy DB check constraint");
+            return Profile.Role.buyer;
+        }
         try {
-            return Profile.Role.valueOf(role.toLowerCase(Locale.ROOT));
+            return Profile.Role.valueOf(normalized);
         } catch (IllegalArgumentException ex) {
             return Profile.Role.buyer;
         }
