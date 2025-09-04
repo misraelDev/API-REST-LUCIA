@@ -193,3 +193,4 @@ logging.level.com.lucia.service.WebSocketNotificationService=DEBUG
 - Implementar autenticación en el cliente para filtrar mensajes según permisos
 
 
+

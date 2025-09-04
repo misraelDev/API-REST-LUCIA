@@ -55,18 +55,61 @@ public class ProfileService {
         return saved;
     }
 
-    private Profile.Role parseRole(String role) {
-        if (role == null || role.isBlank()) return Profile.Role.buyer;
-        String normalized = role.toLowerCase(Locale.ROOT);
-        // Mapear explícitamente "user" a un rol permitido por la BD
-        if ("user".equals(normalized)) {
-            logger.info("Mapping role 'user' to 'buyer' to satisfy DB check constraint");
-            return Profile.Role.buyer;
+    public Profile getProfileById(UUID userId) {
+        return profileRepository.findById(userId).orElse(null);
+    }
+
+    public java.util.List<Profile> getAllProfiles() {
+        return profileRepository.findAll();
+    }
+
+    @Transactional
+    public Profile updateProfile(UUID userId, String newRole) {
+        Profile profile = profileRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("Profile not found for user: " + userId));
+        
+        Profile.Role role = parseRole(newRole);
+        Profile.Role oldRole = profile.getRole();
+        
+        // Si cambió de buyer/user a seller, crear referido automáticamente
+        if ((oldRole == Profile.Role.buyer || oldRole == Profile.Role.user) && role == Profile.Role.seller) {
+            try {
+                ReferralRequest request = new ReferralRequest();
+                request.setSellerId(userId.toString());
+                
+                var referral = referralService.createReferral(request);
+                logger.info("Referral created automatically for user upgraded to seller: {}", referral.getReferralCode());
+            } catch (Exception e) {
+                logger.error("Failed to create automatic referral for upgraded seller: {}", userId, e);
+            }
         }
+        
+        profile.setRole(role);
+        Profile saved = profileRepository.save(profile);
+        logger.info("Profile updated for user {}: {} -> {}", userId, oldRole, saved.getRole());
+        
+        return saved;
+    }
+
+    @Transactional
+    public boolean deleteProfile(UUID userId) {
+        Profile profile = profileRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("Profile not found for user: " + userId));
+        
+        profileRepository.delete(profile);
+        logger.info("Profile deleted for user: {}", userId);
+        
+        return true;
+    }
+
+    private Profile.Role parseRole(String role) {
+        if (role == null || role.isBlank()) return Profile.Role.user;
+        String normalized = role.toLowerCase(Locale.ROOT);
         try {
             return Profile.Role.valueOf(normalized);
         } catch (IllegalArgumentException ex) {
-            return Profile.Role.buyer;
+            logger.warn("Invalid role '{}' provided, defaulting to 'user'", role);
+            return Profile.Role.user;
         }
     }
 }

@@ -543,4 +543,91 @@ public class WebSocketNotificationService {
             logger.error("Error al enviar notificación WebSocket de métricas del dashboard", e);
         }
     }
+
+    // ========== USER NOTIFICATIONS ==========
+
+    /**
+     * Notifica a todos los clientes sobre un nuevo usuario creado
+     */
+    public void notifyNewUser(java.util.Map<String, Object> userData) {
+        try {
+            logger.info("Enviando notificación WebSocket para nuevo usuario creado");
+            
+            // Notificar a todos los clientes suscritos al topic de usuarios
+            messagingTemplate.convertAndSend("/topic/users/new", userData);
+            
+            logger.info("Notificación WebSocket de nuevo usuario enviada exitosamente");
+            
+        } catch (Exception e) {
+            logger.error("Error al enviar notificación WebSocket de nuevo usuario", e);
+        }
+    }
+
+    /**
+     * Notifica a todos los clientes sobre usuarios consultados
+     */
+    public void notifyUsersConsulted(java.util.Map<String, Object> consultationData) {
+        try {
+            logger.info("Enviando notificación WebSocket de consulta de usuarios");
+            
+            // Notificar a todos los clientes suscritos al topic de consultas de usuarios
+            messagingTemplate.convertAndSend("/topic/users/consulted", consultationData);
+            
+            logger.info("Notificación WebSocket de consulta de usuarios enviada exitosamente");
+            
+        } catch (Exception e) {
+            logger.error("Error al enviar notificación WebSocket de consulta de usuarios", e);
+        }
+    }
+
+    /**
+     * Notifica a todos los clientes sobre un usuario específico consultado
+     */
+    public void notifyUserConsulted(java.util.Map<String, Object> userConsultationData) {
+        try {
+            logger.info("Enviando notificación WebSocket de consulta de usuario específico");
+            
+            // Notificar a todos los clientes suscritos al topic de consultas de usuario
+            messagingTemplate.convertAndSend("/topic/user/consulted", userConsultationData);
+            
+            logger.info("Notificación WebSocket de consulta de usuario específico enviada exitosamente");
+            
+        } catch (Exception e) {
+            logger.error("Error al enviar notificación WebSocket de consulta de usuario específico", e);
+        }
+    }
+
+    /**
+     * Notifica a todos los clientes sobre un usuario actualizado
+     */
+    public void notifyUserUpdated(java.util.Map<String, Object> userUpdateData) {
+        try {
+            logger.info("Enviando notificación WebSocket de usuario actualizado");
+            
+            // Notificar a todos los clientes suscritos al topic de usuarios actualizados
+            messagingTemplate.convertAndSend("/topic/users/updated", userUpdateData);
+            
+            logger.info("Notificación WebSocket de usuario actualizado enviada exitosamente");
+            
+        } catch (Exception e) {
+            logger.error("Error al enviar notificación WebSocket de usuario actualizado", e);
+        }
+    }
+
+    /**
+     * Notifica a todos los clientes sobre un usuario eliminado
+     */
+    public void notifyUserDeleted(java.util.Map<String, Object> userDeleteData) {
+        try {
+            logger.info("Enviando notificación WebSocket de usuario eliminado");
+            
+            // Notificar a todos los clientes suscritos al topic de usuarios eliminados
+            messagingTemplate.convertAndSend("/topic/users/deleted", userDeleteData);
+            
+            logger.info("Notificación WebSocket de usuario eliminado enviada exitosamente");
+            
+        } catch (Exception e) {
+            logger.error("Error al enviar notificación WebSocket de usuario eliminado", e);
+        }
+    }
 }

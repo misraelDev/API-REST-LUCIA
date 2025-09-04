@@ -258,6 +258,127 @@ public class WebSocketController {
     }
 
     /**
+     * Endpoint de prueba para enviar notificaciones de usuarios manualmente
+     */
+    @GetMapping("/api/ws/test-user-notification")
+    @ResponseBody
+    public Map<String, String> testUserNotification() {
+        try {
+            logger.info("Enviando notificación de prueba de usuario vía WebSocket");
+            
+            // Crear un usuario de prueba
+            Map<String, Object> testUser = Map.of(
+                "type", "user_created",
+                "user_id", "test-uuid-123",
+                "email", "test@example.com",
+                "role", "user",
+                "timestamp", System.currentTimeMillis()
+            );
+            
+            // Enviar heartbeat
+            webSocketNotificationService.sendHeartbeat();
+            
+            // Enviar notificación de nuevo usuario
+            webSocketNotificationService.notifyNewUser(testUser);
+            
+            return Map.of(
+                "status", "success",
+                "message", "Notificación de prueba de usuario enviada",
+                "timestamp", String.valueOf(System.currentTimeMillis())
+            );
+            
+        } catch (Exception e) {
+            logger.error("Error al enviar notificación de prueba de usuario", e);
+            return Map.of(
+                "status", "error",
+                "message", "Error: " + e.getMessage(),
+                "timestamp", String.valueOf(System.currentTimeMillis())
+            );
+        }
+    }
+
+    /**
+     * Endpoint de prueba para enviar notificaciones de actualización de usuarios manualmente
+     */
+    @GetMapping("/api/ws/test-user-update-notification")
+    @ResponseBody
+    public Map<String, String> testUserUpdateNotification() {
+        try {
+            logger.info("Enviando notificación de prueba de actualización de usuario vía WebSocket");
+            
+            // Crear un usuario de prueba actualizado
+            Map<String, Object> testUserUpdate = Map.of(
+                "type", "user_updated",
+                "user_id", "test-uuid-123",
+                "email", "updated@example.com",
+                "role", "seller",
+                "full_name", "Usuario Actualizado",
+                "timestamp", System.currentTimeMillis()
+            );
+            
+            // Enviar heartbeat
+            webSocketNotificationService.sendHeartbeat();
+            
+            // Enviar notificación de usuario actualizado
+            webSocketNotificationService.notifyUserUpdated(testUserUpdate);
+            
+            return Map.of(
+                "status", "success",
+                "message", "Notificación de prueba de actualización de usuario enviada",
+                "timestamp", String.valueOf(System.currentTimeMillis())
+            );
+            
+        } catch (Exception e) {
+            logger.error("Error al enviar notificación de prueba de actualización de usuario", e);
+            return Map.of(
+                "status", "error",
+                "message", "Error: " + e.getMessage(),
+                "timestamp", String.valueOf(System.currentTimeMillis())
+            );
+        }
+    }
+
+    /**
+     * Endpoint de prueba para enviar notificaciones de eliminación de usuarios manualmente
+     */
+    @GetMapping("/api/ws/test-user-delete-notification")
+    @ResponseBody
+    public Map<String, String> testUserDeleteNotification() {
+        try {
+            logger.info("Enviando notificación de prueba de eliminación de usuario vía WebSocket");
+            
+            // Crear un usuario de prueba eliminado
+            Map<String, Object> testUserDelete = Map.of(
+                "type", "user_deleted",
+                "user_id", "test-uuid-123",
+                "email", "deleted@example.com",
+                "role", "user",
+                "timestamp", System.currentTimeMillis()
+            );
+            
+            // Enviar heartbeat
+            webSocketNotificationService.sendHeartbeat();
+            
+            // Enviar notificación de usuario eliminado
+            webSocketNotificationService.notifyUserDeleted(testUserDelete);
+            
+            return Map.of(
+                "status", "success",
+                "message", "Notificación de prueba de eliminación de usuario enviada",
+                "timestamp", String.valueOf(System.currentTimeMillis())
+            );
+            
+        } catch (Exception e) {
+            logger.error("Error al enviar notificación de prueba de eliminación de usuario", e);
+            return Map.of(
+                "status", "error",
+                "message", "Error: " + e.getMessage(),
+                "timestamp", String.valueOf(System.currentTimeMillis())
+            );
+        }
+    }
+
+    /**
      * Endpoint para verificar el estado de WebSocket
      */
     @GetMapping("/api/ws/status")
@@ -286,6 +407,11 @@ public class WebSocketController {
                     "/topic/calls/stats/consulted",
                     "/topic/dashboard/stats/consulted",
                     "/topic/dashboard/metrics/updated",
+                    "/topic/users/new",
+                    "/topic/users/consulted",
+                    "/topic/users/updated",
+                    "/topic/users/deleted",
+                    "/topic/user/consulted",
                     "/topic/heartbeat",
                     "/topic/greetings"
                 },

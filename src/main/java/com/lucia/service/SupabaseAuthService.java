@@ -282,6 +282,97 @@ public class SupabaseAuthService {
         }
     }
 
+    public Map<String, Object> getUserById(String userId) {
+        try {
+            logger.info("Retrieving user information for ID: {}", userId);
+
+            String response = adminClient.get()
+                    .uri("/users/" + userId)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            logger.info("User info response received: {}", response);
+            
+            JsonNode node = objectMapper.readTree(response);
+            Map<String, Object> userInfo = new HashMap<>();
+            
+            if (node.has("id")) {
+                userInfo.put("id", node.get("id").asText());
+            }
+            if (node.has("email")) {
+                userInfo.put("email", node.get("email").asText());
+            }
+            if (node.has("created_at")) {
+                userInfo.put("created_at", node.get("created_at").asText());
+            }
+            if (node.has("email_confirmed_at")) {
+                userInfo.put("email_confirmed_at", node.get("email_confirmed_at").asText());
+            }
+            if (node.has("user_metadata")) {
+                JsonNode metadata = node.get("user_metadata");
+                if (metadata.has("full_name")) {
+                    userInfo.put("full_name", metadata.get("full_name").asText());
+                }
+            }
+            
+            return userInfo;
+
+        } catch (WebClientResponseException e) {
+            logger.error("Supabase get user by ID error: {} - Status: {}", e.getResponseBodyAsString(), e.getStatusCode());
+            throw new AuthenticationException("Error al obtener información del usuario: " + parseError(e.getResponseBodyAsString()));
+        } catch (Exception e) {
+            logger.error("Unexpected error during get user by ID", e);
+            throw new AuthenticationException("Error interno del servidor");
+        }
+    }
+
+    public boolean updateUser(String userId, Map<String, Object> updates) {
+        try {
+            logger.info("Updating user information for ID: {}", userId);
+
+            String response = adminClient.put()
+                    .uri("/users/" + userId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(updates)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            logger.info("User update response received: {}", response);
+            return true;
+
+        } catch (WebClientResponseException e) {
+            logger.error("Supabase update user error: {} - Status: {}", e.getResponseBodyAsString(), e.getStatusCode());
+            throw new AuthenticationException("Error al actualizar usuario: " + parseError(e.getResponseBodyAsString()));
+        } catch (Exception e) {
+            logger.error("Unexpected error during user update", e);
+            throw new AuthenticationException("Error interno del servidor");
+        }
+    }
+
+    public boolean deleteUser(String userId) {
+        try {
+            logger.info("Deleting user with ID: {}", userId);
+
+            adminClient.delete()
+                    .uri("/users/" + userId)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            logger.info("User deleted successfully: {}", userId);
+            return true;
+
+        } catch (WebClientResponseException e) {
+            logger.error("Supabase delete user error: {} - Status: {}", e.getResponseBodyAsString(), e.getStatusCode());
+            throw new AuthenticationException("Error al eliminar usuario: " + parseError(e.getResponseBodyAsString()));
+        } catch (Exception e) {
+            logger.error("Unexpected error during user deletion", e);
+            throw new AuthenticationException("Error interno del servidor");
+        }
+    }
+
     public AuthResponse verifyUserToken(String accessToken) {
         try {
             logger.info("Verifying user token...");
